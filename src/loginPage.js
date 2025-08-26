@@ -56,7 +56,7 @@ function checkLogin(userListVar){
             loginSuccess = true;
             if(user.role === 'PM' || user.role === 'VP'){
                 localStorage.setItem('loggedInUser',JSON.stringify(user.username));
-                window.location.href = 'pmPage.html'//'/src/pmPage.html' //this opens our pmDashboard.html and the code associated with that
+                window.location.href = '/src/pmPage.html' //this opens our pmDashboard.html and the code associated with that
                 //console.log('success')
                 //alert('success')
                 return; //exit the loop early
