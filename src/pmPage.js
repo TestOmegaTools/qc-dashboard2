@@ -1,9 +1,11 @@
-//pm.js
+//pmPage.js
 import supabase from "./config/supabaseClient.js"
 
 let allProjectsData = [];//store the full list of projects here
 let projectListPublic = await fetchProjectData();
-const loggedInUsername = JSON.parse(localStorage.getItem('loggedInUser'));
+// Get the username from sessionStorage
+const loggedInUsername = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
 const assignedUserProjects = await fetchUserData();
 document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
 loadProjectQcList(projectListPublic, assignedUserProjects);
@@ -15,7 +17,7 @@ async function fetchProjectData(){
         const { data, error } = await supabase
             .from('project_qc_list')
             .select('*')
-            .order('ProjectID',{ascending: true});//this can order the projects by ID
+            .order('project_id',{ascending: true});//this can order the projects by ID
 
         if (error) {
             console.error('Error fetching data:', error);
@@ -42,7 +44,7 @@ async function fetchUserData(){
             return null;
         }
 
-        const loggedInUser = data.find(user => user.username === loggedInUsername);
+        const loggedInUser = data.find(user => user.emailAddress === loggedInUsername);
         if (loggedInUser) {
             return loggedInUser.assignedProjects;//if true, we found a matching user and now want to get all the projects assigned to them
         } else {
@@ -91,11 +93,11 @@ async function loadProjectQcList(files, usersProjects) {
                         <input
                             type="checkbox"
                             ${milestone.isCompleted ? 'checked' : ''}
-                            id="${project.ProjectID}-${milestone.name.replace(/\s/g, '-')}-checkbox"
-                            data-project-id="${project.ProjectID}"
+                            id="${project.project_id}-${milestone.name.replace(/\s/g, '-')}-checkbox"
+                            data-project-id="${project.project_id}"
                             data-milestone-name="${milestone.name}"
                             class="milestone-checkbox" />
-                        <label for="${project.ProjectID}-${milestone.name.replace(/\s/g, '-')}-checkbox">
+                        <label for="${project.project_id}-${milestone.name.replace(/\s/g, '-')}-checkbox">
                             ${milestone.name}
                         </label>
                     </div>
@@ -104,9 +106,9 @@ async function loadProjectQcList(files, usersProjects) {
 
             // getting the general project information and then adding our previously made milestonesHTML to the HTML. Also creating our project progress bar.
             projectsHTML += `
-                <div class="project-item" data-project-id="${project.ProjectID}">
+                <div class="project-item" data-project-id="${project.project_id}">
                     <h3>Project Name: ${project.ProjectName}</h3>
-                    <h3 class="project-id-label">ID: ${project.ProjectID}</h3>
+                    <h3 class="project-id-label">ID: ${project.project_id}</h3>
                     <h4>Milestones:</h4>
                     <div class="progress-milestones-container">
                         <div class="milestone-list">
@@ -125,7 +127,7 @@ async function loadProjectQcList(files, usersProjects) {
                         </div>
                     </div>
                     <div class="project-actions">
-                        <button class="js-save-project-button" data-project-id="${project.ProjectID}">Save Changes</button>
+                        <button class="js-save-project-button" data-project-id="${project.project_id}">Save Changes</button>
                     </div>
                 </div>
             `;
@@ -141,7 +143,7 @@ function saveMilestones(projectsArray, user){
         button.addEventListener('click', () =>{
             const projectIdToSave = button.getAttribute('data-project-id');//getting the projectId we're saving from the save button
             
-            const projectToUpdate = projectsArray.find(p => p.ProjectID === projectIdToSave);//checking to see if our project ID to button gives us matches one we have stored
+            const projectToUpdate = projectsArray.find(p => p.project_id === projectIdToSave);//checking to see if our project ID to button gives us matches one we have stored
             //console.log(projectToUpdate);
             if (projectToUpdate) {
                 //here we get our QC list from supabase split based on ;
@@ -169,30 +171,34 @@ function saveMilestones(projectsArray, user){
                 });
 
                 //now saving the new project list
-                handleSubmit(milestoneData, projectToUpdate, user);
+                saveProjectChanges(milestoneData, projectToUpdate);
             }
         });
     });
 };
 
-//function for displaying graphs of QC milestones
-const handleSubmit = async (updatedData, projectData, user) => {
+//function for saving udpated data
+async function saveProjectChanges(updatedData, projectData) {
     //e.preventDefault()
-    const projectIDedit = projectData.ProjectID
+    const projectIDedit = projectData.project_id
+    const{ data: {user}} = await supabase.auth.getUser();
+    if (!user){
+        alert('You must be logged in to save');
+        return;
+    }
     //console.log(projectIDedit);
     let transformedStatus = updatedData.map(milestone => milestone.isCompleted);
     let newStatus = transformedStatus.toString().replace(/,/g,';');
     //let newStatus = transformedStatus.replace('[','').replace(']','').replace(',',';');
-    //console.log(newStatus);
     const now = new Date();
     const dateTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
     const {data, error} = await supabase
         .from('project_qc_list')
         .update({
             ProjectQcStatus: newStatus,
-            LastUpdateName: user,
+            LastUpdateName: user.email,
             LastUpdateTime: dateTime
         }) //Pass the columns and the new values
-        .eq('ProjectID', projectIDedit);//Filter to match the specific row for the project
+        .eq('project_id', projectIDedit);//Filter to match the specific row for the project
     alert(`Project: ${projectIDedit} saved updates`)
 }
