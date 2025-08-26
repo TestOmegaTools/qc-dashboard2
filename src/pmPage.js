@@ -5,7 +5,7 @@ let allProjectsData = [];//store the full list of projects here
 let projectListPublic = await fetchProjectData();
 const loggedInUsername = JSON.parse(localStorage.getItem('loggedInUser'));
 const assignedUserProjects = await fetchUserData();
-
+document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
 loadProjectQcList(projectListPublic, assignedUserProjects);
 saveMilestones(projectListPublic, assignedUserProjects)
 
@@ -14,7 +14,8 @@ async function fetchProjectData(){
     try {
         const { data, error } = await supabase
             .from('project_qc_list')
-            .select('*');
+            .select('*')
+            .order('ProjectID',{ascending: true});//this can order the projects by ID
 
         if (error) {
             console.error('Error fetching data:', error);
@@ -66,8 +67,8 @@ async function loadProjectQcList(files, usersProjects) {
         //testing to make sure user is assigned to this project
         if (usersProjects.includes(project.ProjectName)) { 
             //here we get our QC list from supabase split based on ;
-            const milestoneList = project.ProjectQcList.split('; ');
-            const milestoneStatusList = project.ProjectQcStatus.split('; ').map(s => s ==='true');
+            const milestoneList = project.ProjectQcList.split(';');
+            const milestoneStatusList = project.ProjectQcStatus.split(';').map(s => s ==='true');
             const milestoneData = [];
             //now we run through the milestone list to combine them into one array to use later
             for (let i = 0; i < milestoneList.length; i++){
@@ -104,7 +105,8 @@ async function loadProjectQcList(files, usersProjects) {
             // getting the general project information and then adding our previously made milestonesHTML to the HTML. Also creating our project progress bar.
             projectsHTML += `
                 <div class="project-item" data-project-id="${project.ProjectID}">
-                    <h3>${project.ProjectName}</h3>
+                    <h3>Name: ${project.ProjectName}</h3>
+                    <h3 class = "project-id-label">ID: ${project.ProjectID}<h3>
                     <h4>Milestones:</h4>
                     <div class="progress-milestones-container">
                         <div class="milestone-list">
@@ -137,11 +139,11 @@ function saveMilestones(projectsArray, user){
             const projectIdToSave = button.getAttribute('data-project-id');//getting the projectId we're saving from the save button
             
             const projectToUpdate = projectsArray.find(p => p.ProjectID === projectIdToSave);//checking to see if our project ID to button gives us matches one we have stored
-            console.log(projectToUpdate);
+            //console.log(projectToUpdate);
             if (projectToUpdate) {
                 //here we get our QC list from supabase split based on ;
-                const milestoneList = projectToUpdate.ProjectQcList.split('; ');
-                const milestoneStatusList = projectToUpdate.ProjectQcStatus.split('; ').map(s => s ==='true');
+                const milestoneList = projectToUpdate.ProjectQcList.split(';');
+                const milestoneStatusList = projectToUpdate.ProjectQcStatus.split(';').map(s => s ==='true');
                 const milestoneData = [];
                 //now we run through the milestone list to combine them into one array to use later
                 for (let i = 0; i < milestoneList.length; i++){
@@ -162,12 +164,27 @@ function saveMilestones(projectsArray, user){
                         }
                     })
                 });
-                console.log(milestoneData);
-                //now saving the new project list
 
+                //now saving the new project list
+                handleSubmit(milestoneData, projectToUpdate);
             }
         });
     });
 };
 
 //function for displaying graphs of QC milestones
+const handleSubmit = async (updatedData, projectData) => {
+    //e.preventDefault()
+    const projectIDedit = projectData.ProjectID
+    //console.log(projectIDedit);
+    let transformedStatus = updatedData.map(milestone => milestone.isCompleted);
+    let newStatus = transformedStatus.toString().replace(/,/g,';');
+    //let newStatus = transformedStatus.replace('[','').replace(']','').replace(',',';');
+    //console.log(newStatus);
+    const {data, error} = await supabase
+        .from('project_qc_list')
+        .update({ProjectQcStatus: newStatus}) //Pass the column and its new value
+        .eq('ProjectID', projectIDedit);//Filter to match the specific row for the project
+    alert(`Project: ${projectIDedit} saved updates`)
+    
+}

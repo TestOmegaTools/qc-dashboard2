@@ -1,69 +1,79 @@
 body {
-    font-family: Arial;
+    font-family: 'Poppins', sans-serif;
+    background-color: #F4F7F9;
+    color: #333333; /*text color*/
 }
 
-.login-input-grid{
-    display: grid;
-    grid-template-columns: 200px 200px 80px;
-    column-gap: 10px;
-    row-gap: 10px;
-    align-items: center;
+.project-item { /*this is where we control our card color*/
+    background-color: #FFFFFF;
+    border: 1px solid #4A76A8;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: transform 0.2s ease-in-out;
 }
 
-.login-button{
-    background-color: black;
-    color: white;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-/* Container for milestones and progress bar */
-.progress-milestones-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 0px; /* Space between milestones and progress bar */
-    flex-wrap: wrap; /* Allows wrapping on smaller screens */
-}
-
-/* Milestone list styling */
-.milestone-list {
-    flex: 1; /* Allows the milestone list to grow and fill available space */
-    max-width: 400px;
-    margin-right: 5px;
-}
-
-.project-item h3{
+.project-item h3 {
     margin: 5px 0;
 }
-.project-item p{ /*this is how you can edit the <p> values within a class such as .project-item*/
-    margin: 2px 0;
-}
-.project-item h4{
-    margin: 15px 0 5px 0;
+
+.project-item h4 {
+    margin-bottom: 5px;
 }
 
-.js-save-project-button{
-    margin-bottom: 30px;
+.project-item h2 {
+    margin-bottom: 1px;
 }
-/* Progress bar styling */
+
+.progress-milestones-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.milestone-list {
+    flex-grow: 1;
+}
+
+.milestone-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
 .progress-bar-wrapper {
-    width: 250px; /* Set a fixed width for the progress bar area */
-    margin-left: 5px;
+    flex-shrink: 0; /* Prevents shrinking */
+    width: 250px;
 }
-.progress-bar-container {
+.progress-bar{
+    height: 100%;
+    background-color: #4caf50;
+    text-align: center;
+    line-height: 30px;
+    color: white;
+}
+.progress-bar-container{
     width: 100%;
-    background-color: #e0e0e0;
+    background-color: #c7c7c7;
     border-radius: 10px;
     overflow: hidden;
     height: 30px;
     margin-top: 5px;
 }
-.progress-bar {
-    height: 100%;
-    background-color: #4caf50; /* Green color for progress */
-    text-align: center;
-    line-height: 30px;
+
+/* Save Changes Button */
+.js-save-project-button {
+    background-color: #4A76A8; /* Your chosen accent color */
     color: white;
-    transition: width 0.3s ease; /* Smooth transition for visual updates */
-    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.js-save-project-button:hover {
+    background-color: #385E8F; /* A slightly darker shade for the hover effect */
 }
