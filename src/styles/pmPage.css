@@ -4,12 +4,15 @@ body {
     color: #333333; /*text color*/
 }
 
-.project-item { /*this is where we control our card color*/
+.project-item { /*this is where we control our full card styles*/
+    width: 1000px;
+    flex-shrink: 0;
+
     background-color: #FFFFFF;
     border: 1px solid #4A76A8;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    padding: 15px;
     margin-bottom: 20px;
     transition: transform 0.2s ease-in-out;
 }
@@ -26,42 +29,48 @@ body {
     margin-bottom: 1px;
 }
 
+/* Update the main container */
 .progress-milestones-container {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
+    align-items: flex-start; /* Correct, aligns everything to the top */
+    gap: 10px;
 }
 
 .milestone-list {
-    flex-grow: 1;
+    max-height: 150px;
+    overflow-y: auto; /*adds a scroll bar only when needed*/
+    flex-grow: 1; /* Takes up available space */
 }
 
-.milestone-item {
+/* This is the new right-side container */
+.progress-info-container {
     display: flex;
-    align-items: center;
-    margin-bottom: 8px;
+    flex-direction: column;
+    flex-shrink: 0;
+    flex-basis: 350px; /* Gives the container a fixed width */
+    gap: 5px; /* Adds vertical space between elements inside this container */
 }
 
-.progress-bar-wrapper {
-    flex-shrink: 0; /* Prevents shrinking */
-    width: 250px;
+/* Existing styles for the progress bar container */
+.progress-bar-container {
+    width: 100%;
+    background-color: #c7c7c7;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 30px;
+    margin-top: 0;
 }
-.progress-bar{
+
+.progress-bar {
     height: 100%;
     background-color: #4caf50;
     text-align: center;
     line-height: 30px;
     color: white;
 }
-.progress-bar-container{
-    width: 100%;
-    background-color: #c7c7c7;
-    border-radius: 10px;
-    overflow: hidden;
-    height: 30px;
-    margin-top: 5px;
-}
+
+/* You will also need to add styles for .last-update-stats if you want them styled differently */
 
 /* Save Changes Button */
 .js-save-project-button {
@@ -72,6 +81,7 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 10px;
 }
 
 .js-save-project-button:hover {

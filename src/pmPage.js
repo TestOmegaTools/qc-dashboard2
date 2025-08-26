@@ -7,7 +7,7 @@ const loggedInUsername = JSON.parse(localStorage.getItem('loggedInUser'));
 const assignedUserProjects = await fetchUserData();
 document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
 loadProjectQcList(projectListPublic, assignedUserProjects);
-saveMilestones(projectListPublic, assignedUserProjects)
+saveMilestones(projectListPublic, loggedInUsername)
 
 //this is where we get the project data from our supabase table
 async function fetchProjectData(){
@@ -105,19 +105,22 @@ async function loadProjectQcList(files, usersProjects) {
             // getting the general project information and then adding our previously made milestonesHTML to the HTML. Also creating our project progress bar.
             projectsHTML += `
                 <div class="project-item" data-project-id="${project.ProjectID}">
-                    <h3>Name: ${project.ProjectName}</h3>
-                    <h3 class = "project-id-label">ID: ${project.ProjectID}<h3>
+                    <h3>Project Name: ${project.ProjectName}</h3>
+                    <h3 class="project-id-label">ID: ${project.ProjectID}</h3>
                     <h4>Milestones:</h4>
                     <div class="progress-milestones-container">
                         <div class="milestone-list">
                             ${milestonesHTML}
                         </div>
-                        <div class="progress-bar-wrapper">
+                        <div class="progress-info-container">
                             <p>${project.ProjectName} QC Progress</p>
                             <div class="progress-bar-container">
                                 <div class="progress-bar" style="width: ${milestonePercentage}%;">
                                     ${Math.round(milestonePercentage)}%
                                 </div>
+                            </div>
+                            <div class="last-update-stats">
+                                <p>Last Update: ${project.LastUpdateName}, ${project.LastUpdateTime}</p>
                             </div>
                         </div>
                     </div>
@@ -166,14 +169,14 @@ function saveMilestones(projectsArray, user){
                 });
 
                 //now saving the new project list
-                handleSubmit(milestoneData, projectToUpdate);
+                handleSubmit(milestoneData, projectToUpdate, user);
             }
         });
     });
 };
 
 //function for displaying graphs of QC milestones
-const handleSubmit = async (updatedData, projectData) => {
+const handleSubmit = async (updatedData, projectData, user) => {
     //e.preventDefault()
     const projectIDedit = projectData.ProjectID
     //console.log(projectIDedit);
@@ -181,10 +184,15 @@ const handleSubmit = async (updatedData, projectData) => {
     let newStatus = transformedStatus.toString().replace(/,/g,';');
     //let newStatus = transformedStatus.replace('[','').replace(']','').replace(',',';');
     //console.log(newStatus);
+    const now = new Date();
+    const dateTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
     const {data, error} = await supabase
         .from('project_qc_list')
-        .update({ProjectQcStatus: newStatus}) //Pass the column and its new value
+        .update({
+            ProjectQcStatus: newStatus,
+            LastUpdateName: user,
+            LastUpdateTime: dateTime
+        }) //Pass the columns and the new values
         .eq('ProjectID', projectIDedit);//Filter to match the specific row for the project
     alert(`Project: ${projectIDedit} saved updates`)
-    
 }
