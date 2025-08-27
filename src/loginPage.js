@@ -5,14 +5,11 @@ import supabase from "./config/supabaseClient.js"
 document.querySelector('.js-login-button').addEventListener('click', async () => {
     const userNameInput = document.querySelector('.js-User-Name').value;
     const userPasswordInput = document.querySelector('.js-User-Password').value;
-    //console.log(userNameInput + '' + userPasswordInput)
+
     // Use a try/catch block for error handling
     try {
-        // Sign in using email and password.
-        // You would need to change your 'username' column to 'email' in the Supabase Auth table.
-        // You could also create a custom sign-in function if you want to use the 'username' column,
-        // but it's generally better to use the email.
-        const { data, error } = await supabase.auth.signInWithPassword({
+        // Sign in using user input email and password.
+        const { data, error } = await supabase.auth.signInWithPassword({ //this actually sends the user input email and password to Supabase for verification
             email: userNameInput,
             password: userPasswordInput,
         });
@@ -25,9 +22,9 @@ document.querySelector('.js-login-button').addEventListener('click', async () =>
         }
 
         // Handle successful login
-        const loggedInUser = data.user;
+        const loggedInUser = data.user;//save our loggedInUser variable
         const { data: userData, error: userError } = await supabase
-            .from('user_list')
+            .from('user_list') //table we're checking for user information such as role
             .select('role') // Fetch the role from your user_list table
             .eq('emailAddress', loggedInUser.email); // Assuming username is stored as the email
 
@@ -36,21 +33,26 @@ document.querySelector('.js-login-button').addEventListener('click', async () =>
             return;
         }
 
+        const { data: userName} = await supabase
+            .from('user_list') //table we're checking for user information such as role
+            .select('name') // Fetch the role from your user_list table
+            .eq('emailAddress', loggedInUser.email); // Assuming username is stored as the email
+        
+        userName.forEach((justName) =>{//this is what gives us just the name so we can use it in the dashboard
+            const userNameText = justName.name;
+            sessionStorage.setItem('loggedInUserNameOnly', JSON.stringify(userNameText));
+        })
+
         if (userData && userData.length > 0) {
             const userRole = userData[0].role;
-            sessionStorage.setItem('loggedInUser', JSON.stringify(loggedInUser.email));
-            setTimeout(() => {
-                if (userRole === 'PM' || userRole === 'VP') {
+            sessionStorage.setItem('loggedInUser', JSON.stringify(loggedInUser.email));//saves the user info for use in other code bases like pmPage.js
+            setTimeout(() => { //makes the page wait a few seconds before sign in so everything is loaded
+                if (userRole === 'PM' || userRole === 'VP') { //ensures what role user has so we can send them to correct page
                     window.location.href = 'pmPage.html';
                 } else if (userRole === 'Admin') {
                     window.location.href = '/src/adminPage.html';
                 }
             },500)
-            /*if (userRole === 'PM' || userRole === 'VP') {
-                window.location.href = 'pmPage.html';
-            } else if (userRole === 'Admin') {
-                window.location.href = '/src/adminPage.html';
-            }*/
         }
     } catch (err) {
         console.error('An unexpected error occurred:', err);

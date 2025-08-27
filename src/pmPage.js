@@ -2,30 +2,33 @@
 import supabase from "./config/supabaseClient.js"
 
 // Get the username from supabase
-const loggedInUsername = await checkAuthenticationAndRedirect();//await supabase.auth.getSession();
+const loggedInUsername = await checkAuthenticationAndRedirect();//this calls the function to ensure our user is valid old=await supabase.auth.getSession();
 // Get the assigned projects from 
-const assignedUserProjects = await fetchUsersProjectData();//await fetchUserData();
+const assignedUserProjects = await fetchUsersProjectData();//this calls the function to select our signed in users projects old=await fetchUserData();
 
 //displays the user email in our title
-document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
-loadProjectQcList(assignedUserProjects);
-saveMilestones(assignedUserProjects)
+//document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
+loadProjectQcList(assignedUserProjects);//this is the function taht gives us our html to display a project and it's QC milestones
+saveMilestones(assignedUserProjects)//this attaches the save buttons code and saves it to Supabase when pressed
 
 async function checkAuthenticationAndRedirect(){
     //const {data: {user}} = await supabase.auth.getUser() //this is the old one that would get the signed in user from supabase
-    const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    const user = JSON.parse(sessionStorage.getItem('loggedInUser'));//gets the user value from sessionStorage
     //if there is no user, redirect to login page
     if(!user){
         alert('Must be logged in')
         window.location.href = '/index.html'
         return false;
     }
-    //if a user is found, their data is available for use
+
+    //displays the user name in our title
+    const userNameGrabbed = JSON.parse(sessionStorage.getItem('loggedInUserNameOnly'));
+    document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${userNameGrabbed}'s QC Dashboard</h3>`
+    //return the data outside the function
     return user;
 }
 
 //this is where we get the project data from our supabase table
-// Fetch all project data for the currently logged-in user
 async function fetchUsersProjectData() {
   try {
     // 1 Get the logged-in user from Supabase Auth
@@ -38,24 +41,24 @@ async function fetchUsersProjectData() {
 
     // 2 Get all project_ids assigned to this user
     const { data: assignments, error: assignmentsError } = await supabase
-      .from('project_assignments')
-      .select('project_id')
-      .eq('uid', userUid);
+      .from('project_assignments') //table to select from
+      .select('project_id')//column to select from
+      .eq('uid', userUid); //ensuring the colum uid matches our userUid value so we only show the user their projects
 
     if (assignmentsError) {
       console.error('Error fetching project assignments:', assignmentsError);
       return [];
     }
 
-    const assignedProjectIds = assignments.map(a => a.project_id);
+    const assignedProjectIds = assignments.map(a => a.project_id); //creates list of projects
     if (assignedProjectIds.length === 0) return []; // User has no projects
 
     // 3 Fetch full project data from project_qc_list for assigned projects
     const { data: projects, error: projectsError } = await supabase
-      .from('project_qc_list')
-      .select('*')
-      .in('project_id', assignedProjectIds)
-      .order('project_id',{ascending: true});
+      .from('project_qc_list') //table to select from
+      .select('*')//selects all the project columns
+      .in('project_id', assignedProjectIds) //checks the project ids and only allows in if they match
+      .order('project_id',{ascending: true}); //puts them in sequential order by projectid
 
     if (projectsError) {
       console.error('Error fetching project details:', projectsError);
@@ -96,7 +99,7 @@ async function loadProjectQcList(files) {
         const completedMilestones = milestoneData.filter(milestone => milestone.isCompleted).length;
         const milestonePercentage = totalMilestones > 0 ? (completedMilestones / totalMilestones) * 100 : 0;
 
-        //running through each milestone and getting out html for it
+        //running through each milestone and getting our html for it
         let milestonesHTML = '';
         //project.milestones.forEach(milestone => {
         milestoneData.forEach(milestone => {
