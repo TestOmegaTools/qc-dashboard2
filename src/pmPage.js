@@ -1,59 +1,60 @@
 //pmPage.js
 import supabase from "./config/supabaseClient.js"
 
-let allProjectsData = [];//store the full list of projects here
-let projectListPublic = await fetchProjectData();
+//let projectListPublic = await fetchProjectData();
+let projectListPublic = [];
 // Get the username from sessionStorage
 const loggedInUsername = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
-const assignedUserProjects = await fetchUserData();
+const assignedUserProjects = await fetchUsersProjectData();//await fetchUserData();
+
 document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
-loadProjectQcList(projectListPublic, assignedUserProjects);
-saveMilestones(projectListPublic, loggedInUsername)
+loadProjectQcList(assignedUserProjects, assignedUserProjects);
+saveMilestones(assignedUserProjects, loggedInUsername)
 
 //this is where we get the project data from our supabase table
-async function fetchProjectData(){
-    try {
-        const { data, error } = await supabase
-            .from('project_qc_list')
-            .select('*')
-            .order('project_id',{ascending: true});//this can order the projects by ID
-
-        if (error) {
-            console.error('Error fetching data:', error);
-            return;
-        }
-        
-        allProjectsData = data;
-        return data;
-
-    } catch (err) {
-        console.error('An unexpected error occurred:', err);
+// Fetch all project data for the currently logged-in user
+async function fetchUsersProjectData() {
+  try {
+    // 1 Get the logged-in user from Supabase Auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('User not logged in or auth error', authError);
+      return [];
     }
-}
+    const userUid = user.id; // UUID of the logged-in user
 
-//we get our user table again here to check what projects our user is assigned to
-async function fetchUserData(){
-    try {
-        const { data, error}  = await supabase
-            .from('user_list')
-            .select('*');
+    // 2 Get all project_ids assigned to this user
+    const { data: assignments, error: assignmentsError } = await supabase
+      .from('project_assignments')
+      .select('project_id')
+      .eq('uid', userUid);
 
-        if (error) {
-            console.error('Error fetching data:', error);
-            return null;
-        }
-
-        const loggedInUser = data.find(user => user.emailAddress === loggedInUsername);
-        if (loggedInUser) {
-            return loggedInUser.assignedProjects;//if true, we found a matching user and now want to get all the projects assigned to them
-        } else {
-            return null; // Return null if no user is found
-        }
-
-    }catch (err) {
-        console.error('An unexpected error occurred:', err);
+    if (assignmentsError) {
+      console.error('Error fetching project assignments:', assignmentsError);
+      return [];
     }
+
+    const assignedProjectIds = assignments.map(a => a.project_id);
+    if (assignedProjectIds.length === 0) return []; // User has no projects
+
+    // 3 Fetch full project data from project_qc_list for assigned projects
+    const { data: projects, error: projectsError } = await supabase
+      .from('project_qc_list')
+      .select('*')
+      .in('project_id', assignedProjectIds);
+
+    if (projectsError) {
+      console.error('Error fetching project details:', projectsError);
+      return [];
+    }
+
+    return projects; // Array of full project objects assigned to the user
+
+  } catch (err) {
+    console.error('Unexpected error fetching user projects:', err);
+    return [];
+  }
 }
 
 //function to actually show the users project list
@@ -66,72 +67,69 @@ async function loadProjectQcList(files, usersProjects) {
 
     let projectsHTML = '';
     files.forEach(project => {
-        //testing to make sure user is assigned to this project
-        if (usersProjects.includes(project.ProjectName)) { 
-            //here we get our QC list from supabase split based on ;
-            const milestoneList = project.ProjectQcList.split(';');
-            const milestoneStatusList = project.ProjectQcStatus.split(';').map(s => s ==='true');
-            const milestoneData = [];
-            //now we run through the milestone list to combine them into one array to use later
-            for (let i = 0; i < milestoneList.length; i++){
-                const milestone = {
-                    name: milestoneList[i],
-                    isCompleted: milestoneStatusList[i]
-                };
-                milestoneData.push(milestone);
-            }
-            const totalMilestones = milestoneData.length
-            const completedMilestones = milestoneData.filter(milestone => milestone.isCompleted).length;
-            const milestonePercentage = totalMilestones > 0 ? (completedMilestones / totalMilestones) * 100 : 0;
+        //here we get our QC list from supabase split based on ;
+        const milestoneList = project.project_qc_list.split(';');
+        const milestoneStatusList = project.project_qc_status.split(';').map(s => s ==='true');
+        const milestoneData = [];
+        //now we run through the milestone list to combine them into one array to use later
+        for (let i = 0; i < milestoneList.length; i++){
+            const milestone = {
+                name: milestoneList[i],
+                isCompleted: milestoneStatusList[i]
+            };
+            milestoneData.push(milestone);
+        }
+        const totalMilestones = milestoneData.length
+        const completedMilestones = milestoneData.filter(milestone => milestone.isCompleted).length;
+        const milestonePercentage = totalMilestones > 0 ? (completedMilestones / totalMilestones) * 100 : 0;
 
-            //running through each milestone and getting out html for it
-            let milestonesHTML = '';
-            //project.milestones.forEach(milestone => {
-            milestoneData.forEach(milestone => {
-                milestonesHTML += `
-                    <div class="milestone-item">
-                        <input
-                            type="checkbox"
-                            ${milestone.isCompleted ? 'checked' : ''}
-                            id="${project.project_id}-${milestone.name.replace(/\s/g, '-')}-checkbox"
-                            data-project-id="${project.project_id}"
-                            data-milestone-name="${milestone.name}"
-                            class="milestone-checkbox" />
-                        <label for="${project.project_id}-${milestone.name.replace(/\s/g, '-')}-checkbox">
-                            ${milestone.name}
-                        </label>
-                    </div>
-                `;
-            });
-
-            // getting the general project information and then adding our previously made milestonesHTML to the HTML. Also creating our project progress bar.
-            projectsHTML += `
-                <div class="project-item" data-project-id="${project.project_id}">
-                    <h3>Project Name: ${project.ProjectName}</h3>
-                    <h3 class="project-id-label">ID: ${project.project_id}</h3>
-                    <h4>Milestones:</h4>
-                    <div class="progress-milestones-container">
-                        <div class="milestone-list">
-                            ${milestonesHTML}
-                        </div>
-                        <div class="progress-info-container">
-                            <p>${project.ProjectName} QC Progress</p>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" style="width: ${milestonePercentage}%;">
-                                    ${Math.round(milestonePercentage)}%
-                                </div>
-                            </div>
-                            <div class="last-update-stats">
-                                <p>Last Update: ${project.LastUpdateName}, ${project.LastUpdateTime}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-actions">
-                        <button class="js-save-project-button" data-project-id="${project.project_id}">Save Changes</button>
-                    </div>
+        //running through each milestone and getting out html for it
+        let milestonesHTML = '';
+        //project.milestones.forEach(milestone => {
+        milestoneData.forEach(milestone => {
+            milestonesHTML += `
+                <div class="milestone-item">
+                    <input
+                        type="checkbox"
+                        ${milestone.isCompleted ? 'checked' : ''}
+                        id="${project.project_id}-${milestone.name.replace(/\s/g, '-')}-checkbox"
+                        data-project-id="${project.project_id}"
+                        data-milestone-name="${milestone.name}"
+                        class="milestone-checkbox" />
+                    <label for="${project.project_id}-${milestone.name.replace(/\s/g, '-')}-checkbox">
+                        ${milestone.name}
+                    </label>
                 </div>
             `;
-        }
+        });
+
+        // getting the general project information and then adding our previously made milestonesHTML to the HTML. Also creating our project progress bar.
+        projectsHTML += `
+            <div class="project-item" data-project-id="${project.project_id}">
+                <h3>Project Name: ${project.project_name}</h3>
+                <h3 class="project-id-label">ID: ${project.project_id}</h3>
+                <h4>Milestones:</h4>
+                <div class="progress-milestones-container">
+                    <div class="milestone-list">
+                        ${milestonesHTML}
+                    </div>
+                    <div class="progress-info-container">
+                        <p>${project.project_name} QC Progress</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${milestonePercentage}%;">
+                                ${Math.round(milestonePercentage)}%
+                            </div>
+                        </div>
+                        <div class="last-update-stats">
+                            <p>Last Update: ${project.last_update_name}, ${project.last_update_time}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-actions">
+                    <button class="js-save-project-button" data-project-id="${project.project_id}">Save Changes</button>
+                </div>
+            </div>
+        `;
     });
 
     projectListContainer.innerHTML = projectsHTML;
@@ -147,8 +145,8 @@ function saveMilestones(projectsArray, user){
             //console.log(projectToUpdate);
             if (projectToUpdate) {
                 //here we get our QC list from supabase split based on ;
-                const milestoneList = projectToUpdate.ProjectQcList.split(';');
-                const milestoneStatusList = projectToUpdate.ProjectQcStatus.split(';').map(s => s ==='true');
+                const milestoneList = projectToUpdate.project_qc_list.split(';');
+                const milestoneStatusList = projectToUpdate.project_qc_status.split(';').map(s => s ==='true');
                 const milestoneData = [];
                 //now we run through the milestone list to combine them into one array to use later
                 for (let i = 0; i < milestoneList.length; i++){
@@ -195,9 +193,9 @@ async function saveProjectChanges(updatedData, projectData) {
     const {data, error} = await supabase
         .from('project_qc_list')
         .update({
-            ProjectQcStatus: newStatus,
-            LastUpdateName: user.email,
-            LastUpdateTime: dateTime
+            project_qc_status: newStatus,
+            last_update_name: user.email,
+            last_update_time: dateTime
         }) //Pass the columns and the new values
         .eq('project_id', projectIDedit);//Filter to match the specific row for the project
     alert(`Project: ${projectIDedit} saved updates`)
