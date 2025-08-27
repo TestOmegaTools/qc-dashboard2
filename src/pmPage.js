@@ -42,7 +42,8 @@ async function fetchUsersProjectData() {
     const { data: projects, error: projectsError } = await supabase
       .from('project_qc_list')
       .select('*')
-      .in('project_id', assignedProjectIds);
+      .in('project_id', assignedProjectIds)
+      .order('project_id',{ascending: true});
 
     if (projectsError) {
       console.error('Error fetching project details:', projectsError);
