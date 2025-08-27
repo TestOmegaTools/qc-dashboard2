@@ -37,30 +37,47 @@
 ----Git-Hub and Git Pages----
     To connect my project to git-hub, follow to below steps
     1. Open the proejct folder in computers terminal and run the following commands
-        # 1. Initialize Git in your local folder
-        git init
-
-        # 2. Add your project files to the "staging area"
-        git add .
-
-        # 3. Commit your files with a message
-        git commit -m "Initial commit of website files"
-
-        # 4. Rename your main branch (optional, but good practice)
-        git branch -M main
-
-        # 5. Connect your local folder to your GitHub repository
-        git remote add origin https://github.com/your-username/your-username.github.io.git
-
-        # 6. Push your files to GitHub
-        git push -u origin main
+        1.1 npm install gh-pages --save-dev
+        1.2 Then add a deploy script to the package.json function
+            "scripts": {
+                "dev": "vite",
+                "build": "vite build",
+                "preview": "vite preview",
+                "deploy": "gh-pages -d dist"
+                }
+        1.3 Configure git identity to connect to git-hun
+            git config --global user.name "User Name Here"
+            git config --globae user.email "Your Email Here"
+        1.4 Add the git remote repository
+            git remote set-url origin https://github.com/your-username/your-new-repository-name.git
+            you might need to remove and readd origin if it doesn't work
+                git remote remove origin
+                git remote add origin https://github.com/your-username/your-repository-name.git
+        1.5 If you have multiple pages needed for a git-pages, make sure all html files are in the same first folder and have this in a
+            vite.config.js file
+                import { defineConfig } from 'vite';
+                export default defineConfig({
+                    base: '/qc-dashboard2/',
+                    build: {
+                        rollupOptions: {
+                        input: {
+                            main: 'index.html',
+                            pm: 'pmPage.html',
+                        },
+                        },
+                    },
+                });
+            
+            The input options tell it what files to take when creating the vite npm run build function
 
     2. Once installed and connected, you can use Vite by typing
         npm run build
         to create a build version of your project that can be used by git-pages
 
     3. Once that is done and everyhting else is connected, you can type
-        
+        npm run deploy
+        to deploy the build version of the project
+
 ----Node----
     How To Use:
         1. To open the server, press  Windows Key + R and type in "cmd"

@@ -1,0 +1,37 @@
+/*loginPage.css*/
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F4F7F9;
+    color: #333333; /*text color*/
+}
+
+.login-title {
+    font-weight: 25;
+    font-size: 25px;
+    margin-bottom: 1px;
+}
+
+.js-User-Name {
+    width: 250px;
+    padding: 5px 10px;
+}
+
+.js-User-Password{
+    padding: 5px 10px;
+}
+
+/* Save Changes Button */
+.js-login-button {
+    background-color: #4A76A8; /* Your chosen accent color */
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.js-login-button:hover {
+    background-color: #385E8F; /* A slightly darker shade for the hover effect */
+}
