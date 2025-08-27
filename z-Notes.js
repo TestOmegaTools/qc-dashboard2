@@ -34,6 +34,33 @@
     Production Build: When your application is ready to be deployed, you run npm run build. This creates a highly optimized dist folder that contains your
         entire application, which you can then upload to any static web hosting service.
 
+----Git-Hub and Git Pages----
+    To connect my project to git-hub, follow to below steps
+    1. Open the proejct folder in computers terminal and run the following commands
+        # 1. Initialize Git in your local folder
+        git init
+
+        # 2. Add your project files to the "staging area"
+        git add .
+
+        # 3. Commit your files with a message
+        git commit -m "Initial commit of website files"
+
+        # 4. Rename your main branch (optional, but good practice)
+        git branch -M main
+
+        # 5. Connect your local folder to your GitHub repository
+        git remote add origin https://github.com/your-username/your-username.github.io.git
+
+        # 6. Push your files to GitHub
+        git push -u origin main
+
+    2. Once installed and connected, you can use Vite by typing
+        npm run build
+        to create a build version of your project that can be used by git-pages
+
+    3. Once that is done and everyhting else is connected, you can type
+        
 ----Node----
     How To Use:
         1. To open the server, press  Windows Key + R and type in "cmd"
