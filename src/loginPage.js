@@ -16,7 +16,7 @@ document.querySelector('.js-login-button').addEventListener('click', async () =>
             email: userNameInput,
             password: userPasswordInput,
         });
-
+        
         if (error) {
             // Handle login error
             alert('Incorrect username or password. Please try again.');
@@ -39,11 +39,18 @@ document.querySelector('.js-login-button').addEventListener('click', async () =>
         if (userData && userData.length > 0) {
             const userRole = userData[0].role;
             sessionStorage.setItem('loggedInUser', JSON.stringify(loggedInUser.email));
-            if (userRole === 'PM' || userRole === 'VP') {
+            setTimeout(() => {
+                if (userRole === 'PM' || userRole === 'VP') {
+                    window.location.href = 'pmPage.html';
+                } else if (userRole === 'Admin') {
+                    window.location.href = '/src/adminPage.html';
+                }
+            },500)
+            /*if (userRole === 'PM' || userRole === 'VP') {
                 window.location.href = 'pmPage.html';
             } else if (userRole === 'Admin') {
                 window.location.href = '/src/adminPage.html';
-            }
+            }*/
         }
     } catch (err) {
         console.error('An unexpected error occurred:', err);

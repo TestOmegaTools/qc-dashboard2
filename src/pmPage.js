@@ -1,16 +1,28 @@
 //pmPage.js
 import supabase from "./config/supabaseClient.js"
 
-//let projectListPublic = await fetchProjectData();
-let projectListPublic = [];
-// Get the username from sessionStorage
-const loggedInUsername = JSON.parse(sessionStorage.getItem('loggedInUser'));
-
+// Get the username from supabase
+const loggedInUsername = await checkAuthenticationAndRedirect();//await supabase.auth.getSession();
+// Get the assigned projects from 
 const assignedUserProjects = await fetchUsersProjectData();//await fetchUserData();
 
+//displays the user email in our title
 document.querySelector('.js-title').innerHTML = `<h3 class="js-title">${loggedInUsername} QC Dashboard</h3>`
-loadProjectQcList(assignedUserProjects, assignedUserProjects);
-saveMilestones(assignedUserProjects, loggedInUsername)
+loadProjectQcList(assignedUserProjects);
+saveMilestones(assignedUserProjects)
+
+async function checkAuthenticationAndRedirect(){
+    //const {data: {user}} = await supabase.auth.getUser() //this is the old one that would get the signed in user from supabase
+    const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    //if there is no user, redirect to login page
+    if(!user){
+        alert('Must be logged in')
+        window.location.href = '/index.html'
+        return false;
+    }
+    //if a user is found, their data is available for use
+    return user;
+}
 
 //this is where we get the project data from our supabase table
 // Fetch all project data for the currently logged-in user
@@ -59,7 +71,7 @@ async function fetchUsersProjectData() {
 }
 
 //function to actually show the users project list
-async function loadProjectQcList(files, usersProjects) {
+async function loadProjectQcList(files) {
     const projectListContainer = document.querySelector('.js-project-list');
     if (!projectListContainer) {
         console.error("Error: The container with class 'js-project-list' was not found in the DOM.");
@@ -136,7 +148,7 @@ async function loadProjectQcList(files, usersProjects) {
     projectListContainer.innerHTML = projectsHTML;
 };
 
-function saveMilestones(projectsArray, user){
+function saveMilestones(projectsArray){
     const saveButtons = document.querySelectorAll('.js-save-project-button')
     saveButtons.forEach(button => {
         button.addEventListener('click', () =>{
