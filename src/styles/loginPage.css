@@ -3,17 +3,37 @@ body {
     font-family: 'Open Sans', sans-serif;
     background-color: #F4F7F9;
     color: #333333; /*text color*/
+    /*these styles center the form on the page*/
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin:0;
+}
+
+/* Style the container for the inputs */
+.login-input-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Adds space between your inputs */
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 300px;
 }
 
 .login-title {
     font-weight: 25;
     font-size: 25px;
-    margin-bottom: 1px;
+    margin-bottom: 10px;
 }
 
 .js-User-Name, .js-User-Password {
-    width: 90%;
-    max-width: 250px;
+    width: 95%;
+    max-width: 275px;
     padding: 5px 10px;
     margin-bottom: 10px;
 }

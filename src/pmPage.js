@@ -118,16 +118,16 @@ async function loadProjectQcList(files) {
                 <h3 class = "kpi-value">${inProgressTaskTotal}</h3>
             </div>
             <div class = "kpi-box">
-                <p class = "kpi-label">Not Started</p>
-                <h3 class = "kpi-value">${notStartedTaskTotal}</h3>
-            </div>
-            <div class = "kpi-box">
                 <p class = "kpi-label">Overdue</p>
                 <h3 class = "kpi-value">${overdueTaskTotal}</h3>
             </div>
             <div class = "kpi-box">
                 <p class = "kpi-label">Completed</p>
                 <h3 class = "kpi-value">${completeTaskTotal}</h3>
+            </div>
+            <div class = "kpi-box">
+                <p class = "kpi-label">Not Started</p>
+                <h3 class = "kpi-value">${notStartedTaskTotal}</h3>
             </div>
         </div>
     `
