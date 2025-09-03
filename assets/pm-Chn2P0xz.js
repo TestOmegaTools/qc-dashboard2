@@ -5,16 +5,16 @@ import{s as $}from"./supabaseClient-BLHyOY-m.js";await b();const k=await I();M(k
                 <h3 class = "kpi-value">${r}</h3>
             </div>
             <div class = "kpi-box">
-                <p class = "kpi-label">Not Started</p>
-                <h3 class = "kpi-value">${c}</h3>
-            </div>
-            <div class = "kpi-box">
                 <p class = "kpi-label">Overdue</p>
                 <h3 class = "kpi-value">${l}</h3>
             </div>
             <div class = "kpi-box">
                 <p class = "kpi-label">Completed</p>
                 <h3 class = "kpi-value">${o}</h3>
+            </div>
+            <div class = "kpi-box">
+                <p class = "kpi-label">Not Started</p>
+                <h3 class = "kpi-value">${c}</h3>
             </div>
         </div>
     `;a.forEach(s=>{const v=s.project_qc_list.split(";"),m=s.assigned_to.split(";"),p=s.start_dates.split(";"),i=s.end_dates.split(";"),y=s.completed_date.split(";"),_=s.task_status.split(";"),D=s.percent_complete.split(";"),S=s.priority.split(";"),u=[];for(let t=0;t<v.length;t++){const w={name:v[t],assignedTo:m[t],startDate:p[t],endDate:i[t],completedDate:y[t],taskStatus:_[t],percComplete:D[t],priority:S[t]};u.push(w)}const j=u.length,T=u.filter(t=>t.taskStatus==="Completed").length,e=j>0?T/j*100:0;let n=`
