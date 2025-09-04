@@ -101,22 +101,44 @@ body {
     color: white;
 }
 
-/* You will also need to add styles for .last-update-stats if you want them styled differently */
-
-/* Save Changes Button */
-.js-save-project-button {
-    background-color: #4A76A8; /* Your chosen accent color */
+/*Delte button styles*/
+.delete-milestone-button{
+    background-color: #8d1f1f; /* Your chosen accent color */
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.delete-milestone-button:hover {
+    background-color: #cc6e6e; /* A slightly darker shade for the hover effect */
+}
+
+/* Save Changes Button */
+.js-save-project-button{
+    background-color: #001149; /* Your chosen accent color */
+    color: white;
+    border-width: 0.01cm;
+    padding: 7px 15px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin-top: 10px;
 }
-
 .js-save-project-button:hover {
     background-color: #385E8F; /* A slightly darker shade for the hover effect */
+}
+.js-add-milestone-button{
+    color: black;
+    border-width: 0.01cm;
+    padding: 7px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+.js-add-milestone-button:hover {
+    background-color: #d3d3d3; /* A slightly darker shade for the hover effect */
 }
 
 /*Styles that are changed for when the screen is smaller than a certain 768px amount*/
