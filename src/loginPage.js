@@ -67,7 +67,7 @@ document.querySelector('.js-forgot-password').addEventListener('click', async ()
 });
 //This function runs when forgot password button is pressed
 async function sendPasswordResetEmail(email){
-    const{data, error} = await supabase.auth.resetPasswordForEmail(email, { //supabase can send an authenticated email to the user
+    const{data, error} = await supabase.auth.resetPasswordForEmail(email, { //supabase can send an authenticated email to the users
         redirectTo: 'https://testomegatools.github.io/qc-dashboard2/resetPassword.html',//and redirects them to this url we provide. This is the new form 
     })
 
