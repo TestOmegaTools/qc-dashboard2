@@ -47,7 +47,7 @@
                 }
         1.3 Configure git identity to connect to git-hun
             git config --global user.name "User Name Here"
-            git config --globae user.email "Your Email Here"
+            git config --global user.email "Your Email Here"
         1.4 Add the git remote repository
             git remote set-url origin https://github.com/your-username/your-new-repository-name.git
             you might need to remove and readd origin if it doesn't work
