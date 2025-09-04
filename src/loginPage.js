@@ -58,3 +58,23 @@ document.querySelector('.js-login-button').addEventListener('click', async () =>
         console.error('An unexpected error occurred:', err);
     }
 });
+
+//Here we add some functionality for the user to reset their password. This first function adds event listener to the forgot password button
+document.querySelector('.js-forgot-password').addEventListener('click', async () => {
+    const userNameInput = document.querySelector('.js-User-Name').value;
+    sendPasswordResetEmail(userNameInput);
+
+});
+//This function runs when forgot password button is pressed
+async function sendPasswordResetEmail(email){
+    const{data, error} = await supabase.auth.resetPasswordForEmail(email, { //supabase can send an authenticated email to the user
+        redirectTo: 'https://testomegatools.github.io/qc-dashboard2/resetPassword.html',//and redirects them to this url we provide. This is the new form 
+    })
+
+    if(error){
+        console.error ('Error sending password reset email.')
+        alert('An error occured. Please try again later')
+    }else{
+        alert('Password reset email sent successfully. Please check your inbox.')
+    }
+};
