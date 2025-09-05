@@ -17,8 +17,6 @@ import{s as v}from"./supabaseClient-BLHyOY-m.js";let h=[];async function w(){awa
                 <h3 class = "kpi-value">${a}</h3>
             </div>
         </div>
-        <div class="calendar-container">
-        </div>
     `;o.forEach(s=>{const g=s.project_qc_list.split(";"),m=s.assigned_to.split(";"),u=s.start_dates.split(";"),j=s.end_dates.split(";"),S=s.completed_date.split(";"),f=s.task_status.split(";"),D=s.priority.split(";"),n=[];for(let e=0;e<g.length;e++){const T={name:g[e],assignedTo:m[e],startDate:u[e],endDate:j[e],completedDate:S[e],taskStatus:f[e],priority:D[e]};n.push(T)}const _=n.length,$=n.filter(e=>e.taskStatus==="Completed").length,k=_>0?$/_*100:0;let y=`
         <table class = "milestones-table">
             <thead>
