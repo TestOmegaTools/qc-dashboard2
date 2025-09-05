@@ -95,13 +95,27 @@ async function loadProjectQcList(files) {
     let overdueTaskTotal = 0;
     let upcomingEndTaskTotal = 0;
     const now = new Date();
+
+    //chart logic
+    const taskStatusCounts = {};
+    const assignedToCounts = {};
+
     //Loop to go through each project and look at all the important values we want
     files.forEach(project => {
         //Get the important values for each project individually
         const milestoneEndDates = project.end_dates.split(';');//get our end dates
         const milestoneTaskStatus = project.task_status.split(';');//get our status
+        const milestoneAssignedTo = project.assigned_to.split(';');
+
         for (let i = 0; i < milestoneTaskStatus.length; i++){//go through every milestone
             const milestoneEndDate = new Date(milestoneEndDates[i])//get the end date for the current milestone
+            const status = milestoneTaskStatus[i];
+            const assignedTo = milestoneAssignedTo[i];
+
+            //Aggregate data for the charts
+            taskStatusCounts[status] = (taskStatusCounts[status] || 0) +1;
+            assignedToCounts[assignedTo] = (assignedToCounts[assignedTo] || 0)+1;
+
             if (milestoneTaskStatus[i] === "Not Started"){ //if not started, we want to do two more checks
                 if (now > milestoneEndDate){//if true, task is overdue and we add to our counter
                     overdueTaskTotal += 1
@@ -121,22 +135,32 @@ async function loadProjectQcList(files) {
     })
     //Now, we want to set up our HTML variable for the KPI's and all the milestones. We start with KPI's since they're at the top of the page
     let projectsKpiHTML = `
-        <div class = "kpi-container">
-            <div class = "kpi-box">
-                <p class = "kpi-label">In Progress</p>
-                <h3 class = "kpi-value">${inProgressTaskTotal}</h3>
+        <div class = "top-info-container">
+            <div class = "kpi-container">
+                <div class = "kpi-box">
+                    <p class = "kpi-label">In Progress</p>
+                    <h3 class = "kpi-value">${inProgressTaskTotal}</h3>
+                </div>
+                <div class = "kpi-box">
+                    <p class = "kpi-label">Overdue</p>
+                    <h3 class = "kpi-value">${overdueTaskTotal}</h3>
+                </div>
+                <div class = "kpi-box">
+                    <p class = "kpi-label">Completed</p>
+                    <h3 class = "kpi-value">${completeTaskTotal}</h3>
+                </div>
+                <div class = "kpi-box">
+                    <p class = "kpi-label">Not Started</p>
+                    <h3 class = "kpi-value">${notStartedTaskTotal}</h3>
+                </div>
             </div>
-            <div class = "kpi-box">
-                <p class = "kpi-label">Overdue</p>
-                <h3 class = "kpi-value">${overdueTaskTotal}</h3>
-            </div>
-            <div class = "kpi-box">
-                <p class = "kpi-label">Completed</p>
-                <h3 class = "kpi-value">${completeTaskTotal}</h3>
-            </div>
-            <div class = "kpi-box">
-                <p class = "kpi-label">Not Started</p>
-                <h3 class = "kpi-value">${notStartedTaskTotal}</h3>
+            <div class="chart-container">
+                <div class = "pie-chart-container">
+                    <canvas id="taskStatusChart"></canvas>
+                </div>
+                <div class = "bar-chart-container">
+                    <canvas id="tasksPerPersonChart"></canvas>
+                </div>
             </div>
         </div>
     `
@@ -307,6 +331,61 @@ async function loadProjectQcList(files) {
     });
 
     projectListContainer.innerHTML = projectsHTML;
+
+    //Get the chart canvas elements after they have been added to the DOM
+    const taskStatusCanvas = document.getElementById('taskStatusChart');
+    const tasksPerPersonCanvas = document.getElementById('tasksPerPersonChart');
+
+    //create the donut chart
+    new Chart(taskStatusCanvas, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(taskStatusCounts),
+            datasets: [{
+                label: 'Task Status',
+                data: Object.values(taskStatusCounts),
+                backgroundColor: ['#4CAF50', '#FF9800', '#eb5252ff'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {position: 'bottom'},
+                title: {display: true, text: 'Task Status'}
+            }
+        }
+    });
+
+    let barColors = [];
+    let assignedUsersArray = Object.keys(assignedToCounts)
+    for (let i = 0; i < assignedUsersArray.length; i++){
+        //console.log('#'+Math.round(Math.random()*1000))
+        barColors.push('#'+Math.round(Math.random()*1000))
+    }
+
+    //Create the bar chart
+    new Chart(tasksPerPersonCanvas, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(assignedToCounts),
+            datasets: [{
+                label: 'Number of Tasks',
+                data: Object.values(assignedToCounts),
+                backgroundColor: barColors,//'#4285F4',
+                borderColor: '#4285F4',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Tasks Per Person' }
+            },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
 };
 
 function attachEventListeners(){
